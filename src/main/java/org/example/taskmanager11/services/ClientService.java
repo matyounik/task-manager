@@ -26,6 +26,27 @@ public class ClientService {
         clientRepository.save(client);
     }
 
+    @Transactional
+    public void changePassword(String login, String oldPassword, String newPassword) {
+        Client client = clientRepository.findByLogin(login);
+        if (client == null) {
+            throw new RuntimeException("User not found: " + login);
+        }
+
+        String oldHash = Utils.passwordHash(client.getSalt(), oldPassword);
+        if (!oldHash.equals(client.getPassword())) {
+            throw new RuntimeException("Old password is incorrect.");
+        }
+
+        String newSalt = Utils.generateRandomString(10);
+        String newHash = Utils.passwordHash(newSalt, newPassword);
+
+        client.setSalt(newSalt);
+        client.setPassword(newHash);
+
+        clientRepository.save(client);
+    }
+
     @Transactional(readOnly = true)
     public boolean checkClient(String login, String password) {
         Client client = clientRepository.findByLogin(login);

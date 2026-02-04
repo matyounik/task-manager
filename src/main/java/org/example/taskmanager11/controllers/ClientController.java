@@ -50,6 +50,28 @@ public class ClientController {
             return "redirect:/login";
     }
 
+    @GetMapping("change-password")
+    public String changePasswordForm() {
+        return "change-password"; // страница с формой для смены пароля
+    }
+
+    @PostMapping("change-password")
+    public String changePassword(@RequestParam String oldPassword,
+                                 @RequestParam String newPassword,
+                                 HttpSession session) {
+        String login = (String) session.getAttribute("login");
+        if (login == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            clientService.changePassword(login, oldPassword, newPassword);
+            return "redirect:/?passwordChanged";
+        } catch (RuntimeException e) {
+            return "redirect:/change-password?error";
+        }
+    }
+
     @GetMapping("logout")
     public String logout(HttpSession session) {
         session.removeAttribute("login");
